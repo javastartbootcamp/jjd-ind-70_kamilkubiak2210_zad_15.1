@@ -1,46 +1,55 @@
 package pl.javastart.task;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class TournamentStats {
 
+    private static final int SORT_BY_FIRST_NAME = 1;
+    private static final int SORT_BY_LAST_NAME = 2;
+    private static final int SORT_BY_RESULT = 3;
+    private static final int SORTING_BY_REVERSE = 2;
+    private static final int SORT_ASCENDING = 1;
+    private static boolean reverseList;
+
     void run(Scanner scanner) {
         TournamentStatsWriter tournamentStatsWriter = new TournamentStatsWriter();
-        LinkedList<TournamentPlayer> tournamentPlayers = listOfPersonsMaker(scanner);
+        List<TournamentPlayer> tournamentPlayers = listOfPersonsMaker(scanner);
         sortListOfPlayers(scanner, tournamentStatsWriter, tournamentPlayers);
     }
 
-    private static void sortListOfPlayers(Scanner scanner, TournamentStatsWriter tournamentStatsWriter, LinkedList<TournamentPlayer> tournamentPlayers) {
+    private static void sortListOfPlayers(Scanner scanner, TournamentStatsWriter tournamentStatsWriter, List<TournamentPlayer> tournamentPlayers) {
         int sortDescendingOrAscending;
 
-        System.out.println("Po jakim parametrze posortować? (1 - imię, 2 - nazwisko, 3 - wynik)");
+        System.out.printf("Po jakim parametrze posortować? (%d - imię, %d - nazwisko, %d - wynik)\n", SORT_BY_FIRST_NAME, SORT_BY_LAST_NAME, SORT_BY_RESULT);
         int parameter = scanner.nextInt();
-        LinkedList<TournamentPlayer> sortedListByParameter = sortListByParameter(tournamentPlayers, parameter);
         System.out.println("Sortować rosnąco czy malejąco? (1 - rosnąco, 2 - malejąco)");
         sortDescendingOrAscending = scanner.nextInt();
-        if (sortDescendingOrAscending == 2) {
-            List<TournamentPlayer> reversedSortedList = IntStream.range(0, sortedListByParameter.size())
-                    .map(i -> sortedListByParameter.size() - 1 - i).mapToObj(sortedListByParameter::get).collect(Collectors.toList());
-            tournamentStatsWriter.saveTournamentStats(reversedSortedList);
-        } else {
-            tournamentStatsWriter.saveTournamentStats(sortedListByParameter);
+        if (sortDescendingOrAscending == SORTING_BY_REVERSE) {
+            reverseList = true;
+        } else if (sortDescendingOrAscending == SORT_ASCENDING) {
+            reverseList = false;
         }
+        List<TournamentPlayer> sortedListByParameter = sortListByParameter(tournamentPlayers, parameter);
+        tournamentStatsWriter.saveTournamentStats(sortedListByParameter);
+
     }
 
-    private static LinkedList<TournamentPlayer> sortListByParameter(LinkedList<TournamentPlayer> tournamentPlayers, int parameter) {
-        switch (parameter) {
-            case 1 -> tournamentPlayers.sort(Comparator.comparing(o -> o.firstName));
-            case 2 -> tournamentPlayers.sort(Comparator.comparing(o -> o.lastName));
-            case 3 -> tournamentPlayers.sort(Comparator.comparing(o -> o.result));
-            default -> throw new IllegalStateException("Unexpected value: " + parameter);
+    private static List<TournamentPlayer> sortListByParameter(List<TournamentPlayer> tournamentPlayers, int parameter) {
+        Comparator<TournamentPlayer> comparator = switch (parameter) {
+            case SORT_BY_FIRST_NAME -> Comparator.comparing(o -> o.firstName);
+            case SORT_BY_LAST_NAME -> Comparator.comparing(o -> o.lastName);
+            case SORT_BY_RESULT -> Comparator.comparing(o -> o.result);
+            default -> throw new IllegalStateException("Niespotykana wartość" + parameter);
+        };
+        if (reverseList) {
+            comparator = comparator.reversed();
         }
+        tournamentPlayers.sort(comparator);
         return tournamentPlayers;
     }
 
-    private LinkedList<TournamentPlayer> listOfPersonsMaker(Scanner scanner) {
-        LinkedList<TournamentPlayer> listOfPlayers = new LinkedList<>();
+    private List<TournamentPlayer> listOfPersonsMaker(Scanner scanner) {
+        List<TournamentPlayer> listOfPlayers = new LinkedList<>();
         String line;
         do {
             System.out.println("Podaj wynik kolejnego gracza (lub stop):");
@@ -90,21 +99,5 @@ public class TournamentStats {
             return firstName + " " + lastName + " " + result;
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            TournamentPlayer player = (TournamentPlayer) o;
-            return Objects.equals(firstName, player.firstName) && Objects.equals(lastName, player.lastName) && Objects.equals(result, player.result);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(firstName, lastName, result);
-        }
     }
 }

@@ -7,9 +7,9 @@ import java.util.List;
 
 public class TournamentStatsWriter {
 
-    public void saveTournamentStats(List<TournamentStats.TournamentPlayer> listOfplayers) {
+    public void saveTournamentStats(List<TournamentStats.TournamentPlayer> listOfPlayers) {
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("stats.csv"))) {
-            for (TournamentStats.TournamentPlayer player : listOfplayers) {
+            for (TournamentStats.TournamentPlayer player : listOfPlayers) {
                 String firstName = player.getFirstName();
                 String lastName = player.getLastName();
                 Integer result = player.getResult();
@@ -17,7 +17,7 @@ public class TournamentStatsWriter {
                 bufferedWriter.newLine();
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Błąd zapisu statystyk", e);
         }
     }
 }
