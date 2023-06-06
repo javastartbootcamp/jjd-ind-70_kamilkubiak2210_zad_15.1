@@ -1,5 +1,6 @@
 package pl.javastart.task;
 
+import java.io.IOException;
 import java.util.*;
 
 public class TournamentStats {
@@ -12,14 +13,20 @@ public class TournamentStats {
     private static boolean reverseList;
 
     void run(Scanner scanner) {
-        TournamentStatsWriter tournamentStatsWriter = new TournamentStatsWriter();
-        List<TournamentPlayer> tournamentPlayers = listOfPersonsMaker(scanner);
-        sortListOfPlayers(scanner, tournamentStatsWriter, tournamentPlayers);
+        TournamentPlayer tournamentPlayer = new TournamentPlayer();
+        List<TournamentPlayer> tournamentPlayersList = tournamentPlayer.createListOfPersons(scanner);
+        Comparator<TournamentPlayer> comparator = tournamentPlayerComparator(scanner);
+        tournamentPlayersList.sort(comparator);
+        try {
+            TournamentStatsWriter tournamentStatsWriter = new TournamentStatsWriter();
+            tournamentStatsWriter.saveTournamentStats(tournamentPlayersList);
+        } catch (IOException e) {
+            System.err.println("Statystyki nie zostały zapisane");
+        }
     }
 
-    private static void sortListOfPlayers(Scanner scanner, TournamentStatsWriter tournamentStatsWriter, List<TournamentPlayer> tournamentPlayers) {
+    private static Comparator<TournamentPlayer> tournamentPlayerComparator(Scanner scanner) {
         int sortDescendingOrAscending;
-
         System.out.printf("Po jakim parametrze posortować? (%d - imię, %d - nazwisko, %d - wynik)\n", SORT_BY_FIRST_NAME, SORT_BY_LAST_NAME, SORT_BY_RESULT);
         int parameter = scanner.nextInt();
         System.out.println("Sortować rosnąco czy malejąco? (1 - rosnąco, 2 - malejąco)");
@@ -29,75 +36,15 @@ public class TournamentStats {
         } else if (sortDescendingOrAscending == SORT_ASCENDING) {
             reverseList = false;
         }
-        List<TournamentPlayer> sortedListByParameter = sortListByParameter(tournamentPlayers, parameter);
-        tournamentStatsWriter.saveTournamentStats(sortedListByParameter);
-
-    }
-
-    private static List<TournamentPlayer> sortListByParameter(List<TournamentPlayer> tournamentPlayers, int parameter) {
         Comparator<TournamentPlayer> comparator = switch (parameter) {
-            case SORT_BY_FIRST_NAME -> Comparator.comparing(o -> o.firstName);
-            case SORT_BY_LAST_NAME -> Comparator.comparing(o -> o.lastName);
-            case SORT_BY_RESULT -> Comparator.comparing(o -> o.result);
+            case SORT_BY_FIRST_NAME -> Comparator.comparing(TournamentPlayer::getFirstName);
+            case SORT_BY_LAST_NAME -> Comparator.comparing(TournamentPlayer::getLastName);
+            case SORT_BY_RESULT -> Comparator.comparing(TournamentPlayer::getResult);
             default -> throw new IllegalStateException("Niespotykana wartość" + parameter);
         };
         if (reverseList) {
             comparator = comparator.reversed();
         }
-        tournamentPlayers.sort(comparator);
-        return tournamentPlayers;
-    }
-
-    private List<TournamentPlayer> listOfPersonsMaker(Scanner scanner) {
-        List<TournamentPlayer> listOfPlayers = new LinkedList<>();
-        String line;
-        do {
-            System.out.println("Podaj wynik kolejnego gracza (lub stop):");
-            line = scanner.nextLine();
-            if (line.equalsIgnoreCase("stop")) {
-                break;
-            }
-            TournamentPlayer tournamentPlayer = personMaker(line);
-            listOfPlayers.add(tournamentPlayer);
-        } while (!line.equals("stop"));
-        return listOfPlayers;
-    }
-
-    private TournamentPlayer personMaker(String line) {
-        String[] strings = line.split(" ");
-        String firstName = strings[0];
-        String lastName = strings[1];
-        Integer result = Integer.valueOf(strings[2]);
-        return new TournamentPlayer(firstName, lastName, result);
-    }
-
-    protected static class TournamentPlayer {
-        private final String firstName;
-        private final String lastName;
-        private final Integer result;
-
-        public String getFirstName() {
-            return firstName;
-        }
-
-        public String getLastName() {
-            return lastName;
-        }
-
-        public Integer getResult() {
-            return result;
-        }
-
-        public TournamentPlayer(String firstName, String lastName, Integer result) {
-            this.firstName = firstName;
-            this.lastName = lastName;
-            this.result = result;
-        }
-
-        @Override
-        public String toString() {
-            return firstName + " " + lastName + " " + result;
-        }
-
+        return comparator;
     }
 }
