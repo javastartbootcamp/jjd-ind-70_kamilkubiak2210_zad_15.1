@@ -13,8 +13,7 @@ public class TournamentStats {
     private static boolean reverseList;
 
     void run(Scanner scanner) {
-        TournamentPlayer tournamentPlayer = new TournamentPlayer();
-        List<TournamentPlayer> tournamentPlayersList = tournamentPlayer.createListOfPersons(scanner);
+        List<TournamentPlayer> tournamentPlayersList = createListOfPersons(scanner);
         Comparator<TournamentPlayer> comparator = tournamentPlayerComparator(scanner);
         tournamentPlayersList.sort(comparator);
         try {
@@ -23,6 +22,22 @@ public class TournamentStats {
         } catch (IOException e) {
             System.err.println("Statystyki nie zostały zapisane");
         }
+    }
+
+    public List<TournamentPlayer> createListOfPersons(Scanner scanner) {
+        TournamentPlayer tournamentPlayer = new TournamentPlayer();
+        List<TournamentPlayer> listOfPlayers = new LinkedList<>();
+        String line;
+        do {
+            System.out.println("Podaj wynik kolejnego gracza (lub stop):");
+            line = scanner.nextLine();
+            if (line.equalsIgnoreCase("stop")) {
+                break;
+            }
+            TournamentPlayer player = tournamentPlayer.createPerson(line);
+            listOfPlayers.add(player);
+        } while (!line.equals("stop"));
+        return listOfPlayers;
     }
 
     private static Comparator<TournamentPlayer> tournamentPlayerComparator(Scanner scanner) {
