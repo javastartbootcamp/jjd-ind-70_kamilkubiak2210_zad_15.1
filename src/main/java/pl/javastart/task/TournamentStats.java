@@ -25,7 +25,6 @@ public class TournamentStats {
     }
 
     public List<TournamentPlayer> createListOfPersons(Scanner scanner) {
-        TournamentPlayer tournamentPlayer = new TournamentPlayer();
         List<TournamentPlayer> listOfPlayers = new LinkedList<>();
         String line;
         do {
@@ -34,7 +33,7 @@ public class TournamentStats {
             if (line.equalsIgnoreCase("stop")) {
                 break;
             }
-            TournamentPlayer player = tournamentPlayer.createPerson(line);
+            TournamentPlayer player = new TournamentPlayer(line);
             listOfPlayers.add(player);
         } while (!line.equals("stop"));
         return listOfPlayers;
