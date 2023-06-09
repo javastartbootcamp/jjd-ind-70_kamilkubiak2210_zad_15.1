@@ -14,28 +14,33 @@ public class TournamentStats {
 
     void run(Scanner scanner) {
         List<TournamentPlayer> tournamentPlayersList = createListOfPersons(scanner);
-        Comparator<TournamentPlayer> comparator = tournamentPlayerComparator(scanner);
-        tournamentPlayersList.sort(comparator);
-        try {
-            TournamentStatsWriter tournamentStatsWriter = new TournamentStatsWriter();
-            tournamentStatsWriter.saveTournamentStats(tournamentPlayersList);
-        } catch (IOException e) {
-            System.err.println("Statystyki nie zostały zapisane");
+        if (tournamentPlayersList.size() != 0) {
+            Comparator<TournamentPlayer> comparator = tournamentPlayerComparator(scanner);
+            tournamentPlayersList.sort(comparator);
+            try {
+                TournamentStatsWriter tournamentStatsWriter = new TournamentStatsWriter();
+                tournamentStatsWriter.saveTournamentStats(tournamentPlayersList);
+            } catch (IOException e) {
+                System.err.println("Statystyki nie zostały zapisane");
+            }
+        } else {
+            System.out.println("Wyjście z programu");
         }
     }
 
     public List<TournamentPlayer> createListOfPersons(Scanner scanner) {
         List<TournamentPlayer> listOfPlayers = new LinkedList<>();
-        String line;
+        boolean exit = false;
         do {
             System.out.println("Podaj wynik kolejnego gracza (lub stop):");
-            line = scanner.nextLine();
+            String line = scanner.nextLine();
             if (line.equalsIgnoreCase("stop")) {
-                break;
+                exit = true;
+            } else {
+                TournamentPlayer player = new TournamentPlayer(line);
+                listOfPlayers.add(player);
             }
-            TournamentPlayer player = new TournamentPlayer(line);
-            listOfPlayers.add(player);
-        } while (!line.equals("stop"));
+        } while (!exit);
         return listOfPlayers;
     }
 
